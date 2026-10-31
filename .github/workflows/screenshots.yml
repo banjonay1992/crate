@@ -1,0 +1,125 @@
+name: Screenshots
+
+# Builds the app, runs it in the iOS Simulator in demo mode (invented data,
+# no network) and captures each main screen in light and dark appearance.
+# Run it by hand from the Actions tab or with:
+#   gh workflow run screenshots.yml
+on:
+  workflow_dispatch:
+
+# contents: write lets the job attach the images to a draft release named
+# "screenshots", which is easier to download than an artifact.
+permissions:
+  contents: write
+
+concurrency:
+  group: screenshots
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  BUNDLE_ID: uk.co.nayproductions.crate
+  SCREENS: scan manual result pressings wantlist collection diglog settings
+
+jobs:
+  screenshots:
+    name: Capture screenshots
+    runs-on: macos-15
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        run: xcodegen generate
+
+      - name: Pick an iPhone simulator
+        run: |
+          xcodebuild -version
+          udid=$(xcrun simctl list devices available -j | python3 -c '
+          import json, re, sys
+          devices = json.load(sys.stdin)["devices"]
+          def version(runtime):
+              return tuple(int(n) for n in re.findall(r"\d+", runtime.rsplit("iOS", 1)[-1]))
+          phones = [(version(rt), d) for rt, ds in devices.items() if ".iOS-" in rt for d in ds if d["name"].startswith("iPhone")]
+          phones.sort(key=lambda p: p[0], reverse=True)
+          for name in ["iPhone 16 Pro", "iPhone 16", "iPhone 15 Pro", "iPhone 15"]:
+              for _, d in phones:
+                  if d["name"] == name:
+                      print(d["udid"]); sys.exit()
+          print(phones[0][1]["udid"])
+          ')
+          echo "Using simulator $udid"
+          xcrun simctl list devices | grep "$udid"
+          echo "SIM_UDID=$udid" >> "$GITHUB_ENV"
+
+      - name: Build for the simulator
+        run: |
+          xcodebuild build \
+            -project Crate.xcodeproj \
+            -scheme Crate \
+            -configuration Debug \
+            -destination "id=$SIM_UDID" \
+            -derivedDataPath build/DerivedData \
+            -quiet \
+            CODE_SIGNING_ALLOWED=NO 2>&1 | tee xcodebuild.log
+
+      - name: Boot simulator and set a clean status bar
+        run: |
+          xcrun simctl boot "$SIM_UDID" || true
+          xcrun simctl bootstatus "$SIM_UDID" -b
+          xcrun simctl status_bar "$SIM_UDID" override \
+            --time 9:41 \
+            --dataNetwork wifi --wifiMode active --wifiBars 3 \
+            --cellularMode active --cellularBars 4 --operatorName "" \
+            --batteryState charged --batteryLevel 100
+
+      - name: Install the app
+        run: |
+          app=build/DerivedData/Build/Products/Debug-iphonesimulator/Crate.app
+          test -d "$app"
+          xcrun simctl install "$SIM_UDID" "$app"
+          # Warm-up launch so the first real capture is not slowed by first-run work.
+          xcrun simctl launch "$SIM_UDID" "$BUNDLE_ID" -CrateDemo YES -CrateScreen scan
+          sleep 10
+          xcrun simctl terminate "$SIM_UDID" "$BUNDLE_ID" || true
+
+      - name: Capture screens
+        run: |
+          mkdir -p screenshots
+          for appearance in light dark; do
+            xcrun simctl ui "$SIM_UDID" appearance "$appearance"
+            for screen in $SCREENS; do
+              xcrun simctl terminate "$SIM_UDID" "$BUNDLE_ID" 2>/dev/null || true
+              sleep 1
+              xcrun simctl launch "$SIM_UDID" "$BUNDLE_ID" -CrateDemo YES -CrateScreen "$screen"
+              sleep 8
+              xcrun simctl io "$SIM_UDID" screenshot --type=png "screenshots/$screen-$appearance.png"
+            done
+          done
+          xcrun simctl terminate "$SIM_UDID" "$BUNDLE_ID" || true
+          ls -l screenshots
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshots
+          path: screenshots/*.png
+          if-no-files-found: error
+
+      - name: Attach to the draft "screenshots" release
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if ! gh release view screenshots >/dev/null 2>&1; then
+            gh release create screenshots --draft \
+              --title "Simulator screenshots" \
+              --notes "Captured by the Screenshots workflow from the app running in demo mode with invented data. Not a release."
+          fi
+          gh release upload screenshots screenshots/*.png --clobber
