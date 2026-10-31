@@ -120,7 +120,7 @@ public struct DiscogsClient: DiscogsAPI {
         transport: HTTPTransport = URLSessionTransport.makeDefault(),
         rateLimiter: RateLimiter = RateLimiter(),
         sleeper: Sleeper = TaskSleeper(),
-        userAgent: String = "Crate/\(CrateCore.version)",
+        userAgent: String = "Crate/\(CrateCoreInfo.version)",
         baseURL: URL = DiscogsClient.defaultBaseURL
     ) {
         self.credentials = credentials

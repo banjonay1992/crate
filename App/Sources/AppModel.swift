@@ -136,7 +136,7 @@ final class AppModel {
     }
 
     private func makeClient(token override: String? = nil) -> DiscogsClient {
-        let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? CrateCore.version
+        let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? CrateCoreInfo.version
         return DiscogsClient(
             credentials: override.map { DiscogsCredentials.personalToken($0) } ?? credentials,
             rateLimiter: rateLimiter,
