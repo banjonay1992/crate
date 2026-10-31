@@ -1,0 +1,4 @@
+// Release builds never embed a development token, even if Secrets.xcconfig sets one.
+#include "Base.xcconfig"
+
+DISCOGS_TOKEN =

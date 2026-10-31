@@ -1,0 +1,6 @@
+// Shared build settings for the Crate app target.
+// Secrets.xcconfig is optional and git-ignored; CI builds without it.
+
+DISCOGS_TOKEN =
+
+#include? "Secrets.xcconfig"
