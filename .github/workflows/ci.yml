@@ -1,0 +1,80 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  core-macos:
+    name: CrateCore tests (macOS)
+    runs-on: macos-15
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Show toolchain
+        run: |
+          xcodebuild -version
+          swift --version
+
+      - name: Run CrateCore tests
+        run: swift test --package-path Packages/CrateCore
+
+  core-linux:
+    name: CrateCore tests (Linux)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    container: swift:6.0-noble
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run CrateCore tests
+        run: swift test --package-path Packages/CrateCore
+
+  app:
+    name: Build iOS app
+    runs-on: macos-15
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check no secrets are committed
+        run: |
+          if git ls-files --error-unmatch Config/Secrets.xcconfig >/dev/null 2>&1; then
+            echo "Config/Secrets.xcconfig must not be committed" >&2
+            exit 1
+          fi
+
+      - name: Lint property lists
+        run: plutil -lint App/Info.plist App/Resources/PrivacyInfo.xcprivacy
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        run: xcodegen generate
+
+      - name: Build for iOS Simulator
+        # shell: bash runs with -eo pipefail, so a failing xcodebuild fails the step.
+        run: |
+          xcodebuild build \
+            -project Crate.xcodeproj \
+            -scheme Crate \
+            -configuration Debug \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath build/DerivedData \
+            -quiet \
+            CODE_SIGNING_ALLOWED=NO 2>&1 | tee xcodebuild.log
