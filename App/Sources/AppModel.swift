@@ -45,6 +45,8 @@ final class AppModel {
 
     // Constants are not tracked by Observation, so they need no annotation.
     let settings: AppSettings
+    /// Demo mode (Debug builds only): invented data, no network, no Keychain.
+    let isDemo: Bool
     private let cache: LibraryCache
     private let queue: LookupQueue
     private let digLog: DigLogStore
@@ -52,6 +54,8 @@ final class AppModel {
     private let tokenStore = KeychainTokenStore()
     private let connectivity = ConnectivityMonitor()
     @ObservationIgnored private var token: String?
+    /// The screen requested with `-CrateScreen`, until a view takes it.
+    @ObservationIgnored private var startScreen: StartScreen?
 
     // MARK: Observed state
 
@@ -75,12 +79,18 @@ final class AppModel {
     private(set) var recentShops: [String] = []
 
     private(set) var isOnline = true
+    /// True once saved data has been loaded at launch.
+    private(set) var hasStarted = false
     private(set) var storageWarning: String?
 
-    init() {
-        self.settings = AppSettings()
+    init(demo: Bool = LaunchOptions.isDemo) {
+        isDemo = demo
+        startScreen = demo ? LaunchOptions.startScreen : nil
+        settings = demo ? Self.demoSettings() : AppSettings()
         var warning: String?
         func store(_ name: String, excludeFromBackup: Bool) -> KeyValueStore {
+            // Demo data lives in memory only, so it never mixes with real data.
+            if demo { return InMemoryStore() }
             do {
                 return try FileStore.applicationSupport(named: name, excludeFromBackup: excludeFromBackup)
             } catch {
@@ -94,9 +104,39 @@ final class AppModel {
         queue = LookupQueue(store: store("LookupQueue", excludeFromBackup: false))
         digLog = DigLogStore(store: store("DigLog", excludeFromBackup: false))
         storageWarning = warning
-        token = Self.initialToken(from: tokenStore)
-        isConnected = token != nil
+        if demo {
+            // Signed in as the invented demo user; the Keychain is never read.
+            isConnected = true
+        } else {
+            token = Self.initialToken(from: tokenStore)
+            isConnected = token != nil
+        }
     }
+
+    /// Settings for demo mode, in their own UserDefaults suite that is reset
+    /// on every launch, so the real settings are left alone.
+    private static func demoSettings() -> AppSettings {
+        let suite = "uk.co.nayproductions.crate.demo"
+        let defaults = UserDefaults(suiteName: suite) ?? .standard
+        defaults.removePersistentDomain(forName: suite)
+        let settings = AppSettings(defaults: defaults)
+        #if DEBUG
+        settings.currency = DemoLibrary.currency
+        settings.currentShop = DemoLibrary.currentShop
+        settings.username = DemoLibrary.username
+        #endif
+        return settings
+    }
+
+    /// Returns the launch screen once; later calls get nil.
+    func takeStartScreen(_ screens: Set<StartScreen>) -> StartScreen? {
+        guard let startScreen, screens.contains(startScreen) else { return nil }
+        self.startScreen = nil
+        return startScreen
+    }
+
+    /// The tab demo mode should open on, without consuming the request.
+    var initialStartScreen: StartScreen? { startScreen }
 
     /// Keychain first. In Debug builds only, fall back to DISCOGS_TOKEN from
     /// the git-ignored Config/Secrets.xcconfig for convenience.
@@ -114,9 +154,16 @@ final class AppModel {
     // MARK: Lifecycle
 
     func start() async {
+        guard !hasStarted else { return }
+        if isDemo {
+            await startDemo()
+            hasStarted = true
+            return
+        }
         await reloadLibrary()
         await reloadQueue()
         await reloadDigLog()
+        hasStarted = true
         connectivity.start { [weak self] online in
             guard let self else { return }
             let cameBack = online && !self.isOnline
@@ -129,13 +176,32 @@ final class AppModel {
         }
     }
 
+    /// Seeds the in-memory stores with invented data and runs one queued
+    /// lookup through the demo API so Offline lookups has an answer to show.
+    /// The connectivity monitor is not started, so the app always looks online.
+    private func startDemo() async {
+        #if DEBUG
+        try? await DemoLibrary.seed(cache: cache, digLog: digLog)
+        _ = try? await queue.enqueue(.matrix("SW 1986-A"), shopName: DemoLibrary.currentShop)
+        let service = lookupService
+        let options = lookupOptions
+        _ = await queue.drain { query in try await service.lookup(query, options: options) }
+        #endif
+        await reloadLibrary()
+        await reloadQueue()
+        await reloadDigLog()
+    }
+
     // MARK: Discogs services
 
     private var credentials: DiscogsCredentials? {
         token.map { DiscogsCredentials.personalToken($0) }
     }
 
-    private func makeClient(token override: String? = nil) -> DiscogsClient {
+    private func makeClient(token override: String? = nil) -> any DiscogsAPI {
+        #if DEBUG
+        if isDemo { return DemoDiscogsAPI() }
+        #endif
         let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? CrateCoreInfo.version
         return DiscogsClient(
             credentials: override.map { DiscogsCredentials.personalToken($0) } ?? credentials,
@@ -159,7 +225,7 @@ final class AppModel {
         let trimmed = newToken.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { throw DiscogsError.missingCredentials }
         let identity = try await makeClient(token: trimmed).identity()
-        try tokenStore.save(trimmed)
+        if !isDemo { try tokenStore.save(trimmed) }
         token = trimmed
         settings.username = identity.username
         isConnected = true
@@ -168,7 +234,7 @@ final class AppModel {
 
     /// Forgets the token and all cached Discogs data. The dig log is kept.
     func disconnect() async {
-        tokenStore.delete()
+        if !isDemo { tokenStore.delete() }
         token = nil
         isConnected = false
         settings.username = nil

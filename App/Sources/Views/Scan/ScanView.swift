@@ -9,6 +9,7 @@ struct ScanView: View {
     @State private var cameraStatus = AVCaptureDevice.authorizationStatus(for: .video)
     @State private var request: LookupRequest?
     @State private var showingManualEntry = false
+    @State private var manualPrefill: LookupQuery?
     @State private var torchOn = false
     @State private var scanMessage: String?
 
@@ -66,7 +67,7 @@ struct ScanView: View {
                 }
             }
             .sheet(isPresented: $showingManualEntry) {
-                ManualEntryView { query in
+                ManualEntryView(prefill: manualPrefill) { query in
                     showingManualEntry = false
                     request = LookupRequest(query: query)
                 }
@@ -77,8 +78,14 @@ struct ScanView: View {
             .navigationDestination(for: ReleaseRoute.self) { route in
                 PressingDetailView(route: route)
             }
+            .task(id: model.hasStarted) {
+                guard model.hasStarted else { return }
+                openStartScreen()
+            }
             .task {
-                if cameraStatus == .notDetermined {
+                // Without a camera (the Simulator, for one) there is nothing to
+                // ask permission for, and the fallback below is shown instead.
+                if cameraAvailable && cameraStatus == .notDetermined {
                     _ = await AVCaptureDevice.requestAccess(for: .video)
                     cameraStatus = AVCaptureDevice.authorizationStatus(for: .video)
                 }
@@ -95,7 +102,7 @@ struct ScanView: View {
         if !cameraAvailable {
             placeholder(
                 symbol: "camera",
-                text: "No camera available. Type the barcode or catalogue number instead."
+                text: "No camera available. Type the barcode, catalogue number or run-out instead."
             )
         } else {
             switch cameraStatus {
@@ -145,6 +152,25 @@ struct ScanView: View {
         .padding()
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.secondary.opacity(0.1))
+    }
+
+    /// Demo mode can open straight onto a lookup or the manual entry sheet.
+    private func openStartScreen() {
+        #if DEBUG
+        switch model.takeStartScreen([.manual, .result, .pressings]) {
+        case .manual:
+            manualPrefill = .catalogueNumber(DemoLibrary.sharedCatalogueNumber)
+            showingManualEntry = true
+        case .result:
+            if let barcode = Barcode(DemoLibrary.wantedBarcode) {
+                request = LookupRequest(query: .barcode(barcode))
+            }
+        case .pressings:
+            request = LookupRequest(query: .catalogueNumber(DemoLibrary.sharedCatalogueNumber))
+        default:
+            break
+        }
+        #endif
     }
 
     private func handle(_ code: ScannedCode) {

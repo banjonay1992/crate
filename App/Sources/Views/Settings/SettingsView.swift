@@ -81,6 +81,10 @@ struct SettingsView: View {
 
                 Section("About") {
                     LabeledContent("Version", value: Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "")
+                    if model.isDemo {
+                        Label("Demo mode: invented sample data, kept in memory. Nothing is sent to Discogs.", systemImage: "theatermasks")
+                            .font(.footnote)
+                    }
                     Text("Crate is open source under the MIT licence. It talks only to Discogs, using your own token, and has no analytics or tracking.")
                         .font(.footnote)
                     Text("This application uses the Discogs API but is not affiliated with, sponsored or endorsed by Discogs. Discogs is a trademark of Zink Media, LLC.")

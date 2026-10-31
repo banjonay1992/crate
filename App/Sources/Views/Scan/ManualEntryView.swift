@@ -7,9 +7,16 @@ struct ManualEntryView: View {
     let onSubmit: (LookupQuery) -> Void
 
     @Environment(\.dismiss) private var dismiss
-    @State private var kind: LookupQuery.Kind = .catalogueNumber
-    @State private var text = ""
+    @State private var kind: LookupQuery.Kind
+    @State private var text: String
     @FocusState private var focused: Bool
+
+    /// `prefill` sets the starting type and text, for example in demo mode.
+    init(prefill: LookupQuery? = nil, onSubmit: @escaping (LookupQuery) -> Void) {
+        self.onSubmit = onSubmit
+        _kind = State(initialValue: prefill?.kind ?? .catalogueNumber)
+        _text = State(initialValue: prefill?.displayText ?? "")
+    }
 
     private var query: LookupQuery? {
         LookupQuery.make(kind: kind, text: text)

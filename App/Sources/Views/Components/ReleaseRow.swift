@@ -8,6 +8,26 @@ struct SleeveThumbnail: View {
     var size: CGFloat = 52
 
     var body: some View {
+        artwork
+            .frame(width: size, height: size)
+            .clipShape(RoundedRectangle(cornerRadius: 6))
+            .accessibilityHidden(true)
+    }
+
+    @ViewBuilder
+    private var artwork: some View {
+        #if DEBUG
+        if let url, url.scheme == DemoLibrary.artScheme {
+            DemoSleeveArt(seed: Int(url.lastPathComponent) ?? 0)
+        } else {
+            remoteImage
+        }
+        #else
+        remoteImage
+        #endif
+    }
+
+    private var remoteImage: some View {
         AsyncImage(url: url) { phase in
             if let image = phase.image {
                 image.resizable().scaledToFill()
@@ -20,9 +40,6 @@ struct SleeveThumbnail: View {
                 }
             }
         }
-        .frame(width: size, height: size)
-        .clipShape(RoundedRectangle(cornerRadius: 6))
-        .accessibilityHidden(true)
     }
 }
 

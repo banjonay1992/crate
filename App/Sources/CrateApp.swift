@@ -6,7 +6,7 @@ struct CrateApp: App {
 
     var body: some Scene {
         WindowGroup {
-            RootView()
+            RootView(startScreen: model.initialStartScreen)
                 .environment(model)
                 .task { await model.start() }
         }
