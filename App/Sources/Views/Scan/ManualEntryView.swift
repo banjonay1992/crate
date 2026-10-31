@@ -74,7 +74,8 @@ struct ManualEntryView: View {
                         .disabled(query == nil)
                 }
             }
-            .onAppear { focused = true }
+            // A prefilled sheet is ready to submit, so it leaves the keyboard down.
+            .onAppear { focused = text.isEmpty }
         }
         .presentationDetents([.medium, .large])
     }

@@ -97,7 +97,8 @@ jobs:
             for screen in $SCREENS; do
               xcrun simctl terminate "$SIM_UDID" "$BUNDLE_ID" 2>/dev/null || true
               sleep 1
-              xcrun simctl launch "$SIM_UDID" "$BUNDLE_ID" -CrateDemo YES -CrateScreen "$screen"
+              xcrun simctl launch "$SIM_UDID" "$BUNDLE_ID" -CrateDemo YES -CrateScreen "$screen" \
+                -AppleLanguages "(en-GB)" -AppleLocale en_GB
               sleep 8
               xcrun simctl io "$SIM_UDID" screenshot --type=png "screenshots/$screen-$appearance.png"
             done

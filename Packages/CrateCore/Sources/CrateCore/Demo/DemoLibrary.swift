@@ -192,7 +192,8 @@ public enum DemoLibrary {
         let scale: [(MediaCondition, Double)] = [
             (.mint, 1.15), (.nearMint, 1.0), (.veryGoodPlus, 0.74), (.veryGood, 0.46), (.goodPlus, 0.26), (.good, 0.14),
         ]
-        return scale.map { PricePoint(condition: $0.0, price: Money(value: nearMint * $0.1, currency: currency)) }
+        // Rounded to the nearest 50p so the figures read like real suggestions.
+        return scale.map { PricePoint(condition: $0.0, price: Money(value: (nearMint * $0.1 * 2).rounded() / 2, currency: currency)) }
     }
 
     // MARK: Dig log

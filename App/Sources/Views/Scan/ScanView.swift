@@ -8,8 +8,7 @@ struct ScanView: View {
     @Environment(\.scenePhase) private var scenePhase
     @State private var cameraStatus = AVCaptureDevice.authorizationStatus(for: .video)
     @State private var request: LookupRequest?
-    @State private var showingManualEntry = false
-    @State private var manualPrefill: LookupQuery?
+    @State private var manualEntry: ManualEntryRequest?
     @State private var torchOn = false
     @State private var scanMessage: String?
 
@@ -44,7 +43,7 @@ struct ScanView: View {
                 }
 
                 Button {
-                    showingManualEntry = true
+                    manualEntry = ManualEntryRequest()
                 } label: {
                     Label("Type a barcode, cat. no. or run-out", systemImage: "keyboard")
                         .frame(maxWidth: .infinity)
@@ -66,9 +65,9 @@ struct ScanView: View {
                     }
                 }
             }
-            .sheet(isPresented: $showingManualEntry) {
-                ManualEntryView(prefill: manualPrefill) { query in
-                    showingManualEntry = false
+            .sheet(item: $manualEntry) { entry in
+                ManualEntryView(prefill: entry.prefill) { query in
+                    manualEntry = nil
                     request = LookupRequest(query: query)
                 }
             }
@@ -109,7 +108,7 @@ struct ScanView: View {
             case .authorized:
                 ZStack(alignment: .bottom) {
                     BarcodeScannerView(
-                        isActive: request == nil && !showingManualEntry && scenePhase == .active,
+                        isActive: request == nil && manualEntry == nil && scenePhase == .active,
                         torchOn: torchOn,
                         onDetect: handle
                     )
@@ -159,8 +158,7 @@ struct ScanView: View {
         #if DEBUG
         switch model.takeStartScreen([.manual, .result, .pressings]) {
         case .manual:
-            manualPrefill = .catalogueNumber(DemoLibrary.sharedCatalogueNumber)
-            showingManualEntry = true
+            manualEntry = ManualEntryRequest(prefill: .catalogueNumber(DemoLibrary.sharedCatalogueNumber))
         case .result:
             if let barcode = Barcode(DemoLibrary.wantedBarcode) {
                 request = LookupRequest(query: .barcode(barcode))
@@ -185,6 +183,12 @@ struct ScanView: View {
         scanMessage = nil
         request = LookupRequest(query: .barcode(barcode))
     }
+}
+
+/// Opens the manual entry sheet, optionally with something already typed.
+struct ManualEntryRequest: Identifiable {
+    let id = UUID()
+    var prefill: LookupQuery?
 }
 
 /// "Digging at" field. The shop name is typed by the user and stored with
