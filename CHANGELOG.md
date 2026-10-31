@@ -21,3 +21,5 @@ First version.
 - Discogs token stored in the Keychain, with an optional git-ignored `Secrets.xcconfig` for Debug builds.
 - Privacy manifest, camera usage description and accessibility labels.
 - XcodeGen project spec and GitHub Actions CI for macOS and Linux tests and the iOS Simulator build.
+- Demo mode for Debug builds (`-CrateDemo YES`, with `-CrateScreen` to pick the first screen), backed by invented data and an in-memory stand-in for the Discogs API.
+- A Screenshots workflow that runs the app in the iOS Simulator and captures each main screen in light and dark appearance, and the resulting screenshots in the README.

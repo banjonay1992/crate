@@ -1,6 +1,20 @@
 # Crate
 
+[![CI](https://github.com/banjonay1992/crate/actions/workflows/ci.yml/badge.svg)](https://github.com/banjonay1992/crate/actions/workflows/ci.yml)
+[![Licence: MIT](https://img.shields.io/badge/licence-MIT-blue.svg)](LICENSE)
+
 Crate is an iPhone app for digging through records in charity shops, car boot sales and record fairs. Scan the barcode on a sleeve, or type the catalogue number or the matrix number etched in the run-out groove, and Crate identifies the exact pressing on Discogs. It then tells you straight away whether that pressing is on your wantlist, whether you already own it (or a different pressing of the same album), and what it sells for on the Discogs marketplace.
+
+**Status:** version 0.1.0. What works: barcode and manual lookup, pressing identification, owned and wanted badges, prices, the offline cache and lookup queue, and the dig log with CSV export. CrateCore is tested on macOS and Linux in CI, and the app builds and runs in the iOS Simulator, which is where the screenshots below come from. It has not yet been field tested on a phone or run against the live Discogs API; that, and a TestFlight beta, are the [v0.2 milestone](https://github.com/banjonay1992/crate/milestone/1).
+
+<p>
+  <img src="docs/screenshots/result-light.png" width="200" alt="Result screen: a German pressing of Harbour Lights identified by its barcode, marked as on the wantlist, with a different pressing already owned and current marketplace prices">
+  <img src="docs/screenshots/pressings-light.png" width="200" alt="Two pressings share the catalogue number GCR 012; each shows the run-out etchings to look for and whether it is owned or wanted">
+  <img src="docs/screenshots/wantlist-light.png" width="200" alt="Wantlist with sleeve art, label, catalogue number and notes for each record">
+  <img src="docs/screenshots/diglog-dark.png" width="200" alt="Dig log in dark mode, grouped into visits by shop and day with totals spent">
+</p>
+
+From left: a barcode match, a catalogue number shared by two pressings, the wantlist, and the dig log in dark mode. Every record, label, shop and price shown is invented demo data. The other screens, in light and dark, are in [docs/screenshots](docs/screenshots).
 
 Shops often have no signal, so Crate keeps your collection and wantlist on the phone, answers what it can offline, and queues anything it cannot answer until you are back online. A dig log records what you found, where and when. The shop name is whatever you type; Crate does not use location.
 
@@ -31,13 +45,37 @@ You need a Mac with Xcode 16 or later and [XcodeGen](https://github.com/yonaskol
 
 ```sh
 brew install xcodegen
-git clone <this repository> crate
+git clone https://github.com/banjonay1992/crate.git
 cd crate
 xcodegen generate
 open Crate.xcodeproj
 ```
 
-Choose the Crate scheme and an iPhone simulator or device. For a device, set your own development team under Signing & Capabilities; the bundle identifier `uk.co.nayproductions.crate` can be changed in `project.yml`. The simulator has no camera, so use "Type a barcode, cat. no. or run-out" there.
+Choose the Crate scheme and an iPhone simulator or device. For a device, set your own development team under Signing & Capabilities; the bundle identifier `uk.co.nayproductions.crate` can be changed in `project.yml`. The simulator has no camera, so the Scan screen says so and you use "Type a barcode, cat. no. or run-out" instead.
+
+### Demo mode
+
+Debug builds have a demo mode for trying the app without a Discogs account, and for screenshots. It fills the app with invented records, a collection, a wantlist, prices and a dig log, all held in memory. It does not use the network, does not read or write the Keychain, and leaves any real data on the device alone. Release builds ignore it.
+
+Turn it on with launch arguments. In Xcode, choose Product > Scheme > Edit Scheme, open Run > Arguments and add `-CrateDemo YES`. Add `-CrateScreen` followed by one of these names to open on a particular screen:
+
+| Name | Opens on |
+| --- | --- |
+| `scan` | The Scan tab. On the Simulator this shows the no-camera fallback. |
+| `manual` | Manual entry with a catalogue number already typed. |
+| `result` | A barcode lookup that finds one pressing: on your wantlist, with a different pressing owned, and prices. |
+| `pressings` | A catalogue number shared by an original and a reissue, with the run-outs that tell them apart. |
+| `wantlist`, `collection`, `diglog`, `settings` | That tab. |
+
+From the command line, with a simulator booted and a Debug build installed:
+
+```sh
+xcrun simctl launch booted uk.co.nayproductions.crate -CrateDemo YES -CrateScreen result
+```
+
+The demo data is in `Packages/CrateCore/Sources/CrateCore/Demo`, next to a stand-in for the Discogs API that answers from it, so lookups in demo mode run through the real matching code. `DemoLibraryTests` checks that the data still tells the stories in the screenshots. Sleeve art in demo mode is drawn by the app from the release ID; no images are bundled.
+
+To refresh the screenshots, run the Screenshots workflow from the Actions tab or with `gh workflow run screenshots.yml`. It builds the app, sets a clean status bar on an iPhone simulator, launches each screen in light and dark appearance, and attaches the images to the run and to a draft release named "screenshots". Scale them to half size before committing them to `docs/screenshots`.
 
 ### Getting a Discogs token
 
@@ -68,6 +106,7 @@ App/                      SwiftUI app target
   Sources/AppModel.swift  App state; bridges SwiftUI and CrateCore
   Sources/Services/       Keychain token store, settings, connectivity monitor
   Sources/Views/          Scan, Result, Wantlist, Collection, Dig Log, Settings
+  Sources/Demo/           Launch arguments and generated sleeve art for demo mode
   Resources/              Asset catalogue, privacy manifest
 Packages/CrateCore/       Platform-independent logic, no dependencies
   Discogs/                Client, wire formats, rate limiter, transport
@@ -76,8 +115,11 @@ Packages/CrateCore/       Platform-independent logic, no dependencies
   Storage/                File-based key-value store, library cache
   Lookup/                 Lookup service, offline lookup queue, sync service
   DigLog/                 Dig log store and CSV export
+  Demo/                   Invented demo data and an in-memory Discogs stand-in (Debug only)
 Config/                   xcconfig files; Secrets.xcconfig is git-ignored
 project.yml               XcodeGen spec (the .xcodeproj is generated, not committed)
+docs/screenshots/         Simulator screenshots used in this README
+.github/workflows/        CI, and the manual Screenshots workflow
 ```
 
 Some design notes:
@@ -103,7 +145,7 @@ The app shows "Data provided by Discogs" alongside release and price information
 
 ## Limitations
 
-- **The app target has not yet been run.** CrateCore has been built and tested on Linux. The SwiftUI and AVFoundation code was written without access to Xcode; CI is set up to build it for the Simulator, but it has not been run on a simulator or real hardware and has no UI tests. Treat the scanning experience as untested until someone has stood in a shop with it.
+- **Not yet tested on a phone.** The app builds in CI and runs in the iOS Simulator in demo mode, which is where the screenshots come from, but it has not been run on real hardware and has no UI tests yet. The camera scanner in particular cannot run in the Simulator, so treat scanning as untested until someone has stood in a shop with it ([#1](https://github.com/banjonay1992/crate/issues/1)).
 - **Matrix search is a heuristic.** The Discogs search API has no field for matrix numbers. Crate searches the identifier index first, falls back to free-text search, then confirms by comparing the run-out strings on the candidates. Etchings are transcribed inconsistently on Discogs, so partial matches are shown as such.
 - **Discogs behaviour is assumed from its documentation.** Response shapes in the fixtures mirror the documented API but the data is invented, and the test suite has never talked to the real service.
 - **Personal tokens only.** There is no OAuth sign-in yet, so each user generates their own token.
@@ -111,6 +153,10 @@ The app shows "Data provided by Discogs" alongside release and price information
 - **Offline matching is only as good as the cache.** Barcode and run-out matching offline works for releases Crate has seen before and, with the prefetch setting on, for the wantlist. Collection items are matched offline by catalogue number only.
 - **Sleeve images are not cached** and do not appear offline.
 - **Large wantlists** take several syncs to prefetch fully, because of the 60 requests per minute limit.
+
+## Roadmap
+
+Planned work, with rough estimates, is in [ROADMAP.md](ROADMAP.md). Each item is a GitHub issue with acceptance criteria, filed under the [v0.2](https://github.com/banjonay1992/crate/milestone/1), [v0.3](https://github.com/banjonay1992/crate/milestone/2) and [Later](https://github.com/banjonay1992/crate/milestone/3) milestones. Issues labelled [good first issue](https://github.com/banjonay1992/crate/labels/good%20first%20issue) are small and self-contained.
 
 ## Licence
 
