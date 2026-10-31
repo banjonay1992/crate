@@ -3,7 +3,7 @@ import Foundation
 import FoundationNetworking
 #endif
 
-public enum DiscogsError: Error, Equatable, Sendable {
+public enum DiscogsError: Error, Hashable, Sendable {
     /// No token has been set up.
     case missingCredentials
     /// 401 or 403: the token is wrong, revoked, or lacks access.

@@ -1,0 +1,19 @@
+{
+  "pagination": { "page": 1, "pages": 1, "per_page": 50, "items": 1, "urls": {} },
+  "results": [
+    {
+      "id": 4000004,
+      "type": "release",
+      "master_id": 0,
+      "title": "Marsh Choir & Penhallow (3) - Quiet Ground",
+      "country": "US",
+      "year": "1986",
+      "format": ["Vinyl", "LP", "Album"],
+      "label": ["Saltwater Sound"],
+      "catno": "SW-1986",
+      "barcode": ["0 73311 22445 8", "SW 1986-A  △ 77001"],
+      "thumb": "",
+      "format_quantity": 2
+    }
+  ]
+}
