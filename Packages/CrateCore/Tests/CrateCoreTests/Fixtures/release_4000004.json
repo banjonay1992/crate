@@ -1,0 +1,23 @@
+{
+  "id": 4000004,
+  "year": "1986",
+  "uri": "/release/4000004-Marsh-Choir-And-Penhallow-Quiet-Ground",
+  "artists": [
+    { "name": "Marsh Choir", "anv": "", "join": "&", "id": 900002 },
+    { "name": "Penhallow (3)", "anv": "", "join": "", "id": 900003 }
+  ],
+  "labels": [
+    { "name": "Saltwater Sound", "catno": "SW-1986", "id": 700003 },
+    { "name": "Saltwater Sound", "catno": "none", "id": 700003 }
+  ],
+  "formats": [
+    { "name": "Vinyl", "qty": "2", "descriptions": ["LP", "Album"] }
+  ],
+  "master_id": 0,
+  "title": "Quiet Ground",
+  "country": "US",
+  "identifiers": [
+    { "type": "Barcode", "value": "0 73311 22445 8", "description": "UPC" },
+    { "type": "Matrix / Runout", "value": "SW 1986-A  △ 77001", "description": "Side A" }
+  ]
+}

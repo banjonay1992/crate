@@ -1,0 +1,23 @@
+{
+  "id": 4000003,
+  "year": 1985,
+  "uri": "/release/4000003-The-Tidal-Rooms-Harbour-Lights",
+  "artists": [
+    { "name": "The Tidal Rooms", "anv": "Tidal Rooms", "join": "", "id": 900001 }
+  ],
+  "labels": [
+    { "name": "Küstenlicht Schallplatten (2)", "catno": "KS 6.24011", "id": 700002 }
+  ],
+  "formats": [
+    { "name": "Vinyl", "qty": "1", "descriptions": ["LP", "Album"] }
+  ],
+  "master_id": 300001,
+  "title": "Harbour Lights",
+  "country": "Germany",
+  "identifiers": [
+    { "type": "Barcode", "value": "4 009876 500313" },
+    { "type": "Matrix / Runout", "value": "6.24011 A  KL-1", "description": "Side A" }
+  ],
+  "tracklist": [],
+  "thumb": "https://i.example.invalid/thumbs/4000003.jpeg"
+}

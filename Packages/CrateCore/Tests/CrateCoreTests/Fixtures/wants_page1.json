@@ -1,0 +1,41 @@
+{
+  "pagination": { "page": 1, "pages": 1, "per_page": 100, "items": 2, "urls": {} },
+  "wants": [
+    {
+      "id": 4000003,
+      "rating": 0,
+      "notes": "Only if the inner sleeve is there",
+      "date_added": "2026-02-20T12:30:00-08:00",
+      "resource_url": "https://api.discogs.com/users/example_digger/wants/4000003",
+      "basic_information": {
+        "id": 4000003,
+        "master_id": 300001,
+        "title": "Harbour Lights",
+        "year": 1985,
+        "thumb": "https://i.example.invalid/thumbs/4000003.jpeg",
+        "formats": [{ "name": "Vinyl", "qty": "1", "descriptions": ["LP", "Album"] }],
+        "labels": [{ "name": "Küstenlicht Schallplatten (2)", "catno": "KS 6.24011", "id": 700002 }],
+        "artists": [{ "name": "The Tidal Rooms", "anv": "", "join": "", "id": 900001 }]
+      }
+    },
+    {
+      "id": 4000004,
+      "rating": 0,
+      "notes": "",
+      "date_added": "2026-04-05T08:15:00-07:00",
+      "basic_information": {
+        "id": 4000004,
+        "master_id": 0,
+        "title": "Quiet Ground",
+        "year": 1986,
+        "thumb": "",
+        "formats": [{ "name": "Vinyl", "qty": "2", "descriptions": ["LP", "Album"] }],
+        "labels": [{ "name": "Saltwater Sound", "catno": "SW-1986", "id": 700003 }],
+        "artists": [
+          { "name": "Marsh Choir", "anv": "", "join": "&", "id": 900002 },
+          { "name": "Penhallow (3)", "anv": "", "join": "", "id": 900003 }
+        ]
+      }
+    }
+  ]
+}

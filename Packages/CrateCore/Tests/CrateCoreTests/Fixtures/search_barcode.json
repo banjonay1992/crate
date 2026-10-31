@@ -1,0 +1,22 @@
+{
+  "pagination": { "page": 1, "pages": 1, "per_page": 50, "items": 1, "urls": {} },
+  "results": [
+    {
+      "id": 4000002,
+      "type": "release",
+      "master_id": 300001,
+      "master_url": "https://api.discogs.com/masters/300001",
+      "uri": "/release/4000002-The-Tidal-Rooms-Harbour-Lights",
+      "title": "The Tidal Rooms - Harbour Lights",
+      "country": "Europe",
+      "year": "2019",
+      "format": ["Vinyl", "LP", "Album", "Reissue", "Remastered"],
+      "label": ["Granite Coast Records"],
+      "catno": "GCR 012",
+      "barcode": ["5012345600291"],
+      "thumb": "",
+      "format_quantity": 1,
+      "community": { "want": 95, "have": 230 }
+    }
+  ]
+}

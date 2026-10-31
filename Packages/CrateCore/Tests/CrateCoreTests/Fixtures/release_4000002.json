@@ -1,0 +1,31 @@
+{
+  "id": 4000002,
+  "year": 2019,
+  "uri": "https://www.discogs.com/release/4000002-The-Tidal-Rooms-Harbour-Lights",
+  "artists": [
+    { "name": "The Tidal Rooms", "anv": "", "join": "", "id": 900001 }
+  ],
+  "labels": [
+    { "name": "Granite Coast Records", "catno": "GCR 012", "id": 700001 }
+  ],
+  "formats": [
+    { "name": "Vinyl", "qty": "1", "descriptions": ["LP", "Album", "Reissue", "Remastered"], "text": "180g" }
+  ],
+  "community": { "have": 230, "want": 95 },
+  "master_id": 300001,
+  "title": "Harbour Lights",
+  "country": "Europe",
+  "released": "2019-11-08",
+  "identifiers": [
+    { "type": "Barcode", "value": "5012345600291" },
+    { "type": "Matrix / Runout", "value": "GCR012-A2 RE", "description": "Side A" },
+    { "type": "Matrix / Runout", "value": "GCR012-B2 RE", "description": "Side B" }
+  ],
+  "tracklist": [
+    { "position": "A1", "type_": "track", "title": "Low Water", "duration": "3:41" },
+    { "position": "B1", "type_": "track", "title": "Harbour Lights", "duration": "5:03" }
+  ],
+  "thumb": "",
+  "lowest_price": null,
+  "num_for_sale": 0
+}

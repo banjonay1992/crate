@@ -1,0 +1,40 @@
+{
+  "id": 4000001,
+  "status": "Accepted",
+  "year": 1984,
+  "resource_url": "https://api.discogs.com/releases/4000001",
+  "uri": "https://www.discogs.com/release/4000001-The-Tidal-Rooms-Harbour-Lights",
+  "artists": [
+    { "name": "The Tidal Rooms", "anv": "", "join": "", "role": "", "tracks": "", "id": 900001, "resource_url": "https://api.discogs.com/artists/900001" }
+  ],
+  "artists_sort": "Tidal Rooms, The",
+  "labels": [
+    { "name": "Granite Coast Records", "catno": "GCR 012", "entity_type": "1", "entity_type_name": "Label", "id": 700001, "resource_url": "https://api.discogs.com/labels/700001" }
+  ],
+  "formats": [
+    { "name": "Vinyl", "qty": "1", "descriptions": ["LP", "Album"], "text": "Gatefold" }
+  ],
+  "community": { "have": 412, "want": 1033, "rating": { "count": 51, "average": 4.41 } },
+  "master_id": 300001,
+  "title": "Harbour Lights",
+  "country": "UK",
+  "released": "1984-05-00",
+  "identifiers": [
+    { "type": "Barcode", "value": "5 012345 600123", "description": "Text" },
+    { "type": "Barcode", "value": "5012345600123", "description": "Scanned" },
+    { "type": "Matrix / Runout", "value": "GCR 012 A-1 PORKY", "description": "Side A, etched" },
+    { "type": "Matrix / Runout", "value": "GCR 012 B-1", "description": "Side B, etched" },
+    { "type": "Label Code", "value": "LC 0001" },
+    { "type": "Rights Society", "value": "MCPS" }
+  ],
+  "tracklist": [
+    { "position": "", "type_": "heading", "title": "Side One", "duration": "" },
+    { "position": "A1", "type_": "track", "title": "Low Water", "duration": "3:41" },
+    { "position": "A2", "type_": "track", "title": "Engine House", "duration": "4:12" },
+    { "position": "B1", "type_": "track", "title": "Harbour Lights", "duration": "5:03" },
+    { "position": "B2", "type_": "track", "title": "Last Train To Penzance", "duration": "" }
+  ],
+  "thumb": "https://i.example.invalid/thumbs/4000001.jpeg",
+  "lowest_price": 18.5,
+  "num_for_sale": 7
+}

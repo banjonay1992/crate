@@ -1,0 +1,11 @@
+{
+  "Mint (M)": { "currency": "GBP", "value": 41.25 },
+  "Near Mint (NM or M-)": { "currency": "GBP", "value": 36.4 },
+  "Very Good Plus (VG+)": { "currency": "GBP", "value": 27.0 },
+  "Very Good (VG)": { "currency": "GBP", "value": 16.75 },
+  "Good Plus (G+)": { "currency": "GBP", "value": 9.5 },
+  "Good (G)": { "currency": "GBP", "value": 5.2 },
+  "Fair (F)": { "currency": "GBP", "value": 2.6 },
+  "Poor (P)": { "currency": "GBP", "value": 1.3 },
+  "Generic (Unknown)": { "currency": "GBP", "value": 1.0 }
+}
