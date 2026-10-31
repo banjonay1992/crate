@@ -87,13 +87,17 @@ public struct PricePoint: Codable, Hashable, Sendable {
 /// so they are often empty; the marketplace stats are more widely available.
 public struct PriceInfo: Codable, Hashable, Sendable {
     public var releaseID: ReleaseID
+    /// The currency the marketplace stats were requested in. Price suggestions
+    /// come back in the currency set on the user's Discogs account, which may differ.
+    public var currency: String
     public var stats: MarketplaceStats?
     /// Sorted best condition first.
     public var suggestions: [PricePoint]
     public var fetchedAt: Date
 
-    public init(releaseID: ReleaseID, stats: MarketplaceStats?, suggestions: [PricePoint], fetchedAt: Date) {
+    public init(releaseID: ReleaseID, currency: String, stats: MarketplaceStats?, suggestions: [PricePoint], fetchedAt: Date) {
         self.releaseID = releaseID
+        self.currency = currency
         self.stats = stats
         self.suggestions = suggestions.sorted { $0.condition < $1.condition }
         self.fetchedAt = fetchedAt
